@@ -28,10 +28,17 @@ Tài liệu được xây dựng nhằm giúp các Tech Lead, Solution Architect
    - [9. Testing & Quality Assurance](#9-testing--quality-assurance)
    - [10. Fullstack & Meta-frameworks](#10-fullstack--meta-frameworks)
    - [11. Authentication & Security (OAuth2 / OIDC)](#11-authentication--security-oauth2--oidc)
-4. [Dự Án Mẫu Thực Chiến (Showcase Projects)](#-dự-án-mẫu-thực-chiến-showcase-projects)
+4. [Bí Kíp Hạng Nặng & Kiến Trúc Doanh Nghiệp (Enterprise Secret Weapons)](#-bí-kíp-hạng-nặng--kiến-trúc-doanh-nghiệp-enterprise-secret-weapons)
+   - [4.1 Micro-frontends & Native Federation](#41-micro-frontends--native-federation)
+   - [4.2 Monorepo & Kiểm Soát Ranh Giới Kiến Trúc (Nx & Sheriff)](#42-monorepo--kiểm-soát-ranh-giới-kiến-trúc-nx--sheriff)
+   - [4.3 Hệ Sinh Thái "Phù Thủy" @ngneat (Elf, Sonner, Casl...)](#43-hệ-sinh-thái-phù-thủy-ngneat-elf-sonner-casl)
+   - [4.4 Các Linh Kiện Doanh Nghiệp Chuyên Dụng (PDF, Mask, Virtual Select, Monaco)](#44-các-linh-kiện-doanh-nghiệp-chuyên-dụng-pdf-mask-virtual-select-monaco)
+   - [4.5 Tinh Hoa Tối Ưu Hiệu Năng & CDK (@rx-angular & Angular CDK)](#45-tinh-hoa-tối-ưu-hiệu-năng--cdk-rx-angular--angular-cdk)
+   - [4.6 Ứng Dụng Đa Nền Tảng (Cross-Platform Mobile với Ionic & Capacitor)](#46-ứng-dụng-đa-nền-tảng-cross-platform-mobile-với-ionic--capacitor)
+5. [Dự Án Mẫu Thực Chiến (Showcase Projects)](#-dự-án-mẫu-thực-chiến-showcase-projects)
    - [Project 01: Enterprise Admin Dashboard](#-project-01-enterprise-admin-dashboard-projects01-enterprise-admin)
-5. [Xu hướng chuyển dịch công nghệ trong Angular (2025 - 2026)](#-xu-hướng-chuyển-dịch-công-nghệ-trong-angular-2025---2026)
-6. [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
+6. [Xu hướng chuyển dịch công nghệ trong Angular (2025 - 2026)](#-xu-hướng-chuyển-dịch-công-nghệ-trong-angular-2025---2026)
+7. [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
 
 ---
 
@@ -595,6 +602,151 @@ Bảo mật ứng dụng Single Page Application đòi hỏi tuân thủ nghiêm
     timeoutFactor: 0.75,
   };
   ```
+
+---
+
+## 💎 Bí Kíp Hạng Nặng & Kiến Trúc Doanh Nghiệp (Enterprise Secret Weapons)
+
+Nhiều lập trình viên lầm tưởng hệ sinh thái Angular ít thư viện vì họ so sánh với React - vốn là một View-library tối giản đòi hỏi phải cài thêm hàng chục package bên ngoài. 
+
+Thực tế, Angular là một **Enterprise Platform tích hợp sẵn ("Batteries-Included")**. Và ẩn sâu dưới bề mặt đó là một kho tàng các **"vũ khí hạng nặng"** được các Solution Architect và Tech Lead toàn cầu tin dùng cho các hệ thống ngân hàng, viễn thông, hàng không và y tế.
+
+---
+
+### 4.1 Micro-frontends & Native Federation
+
+Khi một ứng dụng doanh nghiệp đạt tới quy mô hàng triệu dòng code với hàng chục team phát triển độc lập, mô hình nguyên khối (Monolith) sẽ trở thành nút thắt cổ chai trong chu kỳ release.
+
+#### 📊 Bảng so sánh giải pháp Micro-frontends
+
+| Giải pháp | Hỗ trợ esbuild / Vite | Webpack Independence | Tương thích Angular 17 - 19 |
+| :--- | :--- | :--- | :--- |
+| **[@angular-architects/native-federation](https://www.npmjs.com/package/@angular-architects/native-federation)** 🏆 | ✅ Hoàn toàn (Dựa trên ES Modules) | ✅ Không cần Webpack | ✅ Tuyệt đối (Zoneless, Signals) |
+| **[@angular-architects/module-federation](https://www.npmjs.com/package/@angular-architects/module-federation)** | ⚠️ Cần Custom Webpack Builder | ❌ Phụ thuộc Webpack | ⚠️ Phù hợp codebase cũ |
+| **Single-SPA Angular** | ✅ Có | ✅ Độc lập | ⚠️ Phức tạp trong cấu hình chia sẻ DI |
+
+#### 🏆 Top 1 Khuyên dùng: **@angular-architects/native-federation**
+* **Tác giả**: Manfred Steyer (Google Developer Expert).
+* **Nó làm được gì**: Cho phép tải động các sub-applications (Micro-apps / Remotes) từ các server khác nhau tại thời gian chạy (Runtime). Các remote được deploy độc lập 100% nhưng vẫn chia sẻ chung các dependencies lõi (như `@angular/core`, `@angular/router`) dạng Singleton để tối ưu RAM và băng thông.
+* **Lệnh cài đặt**:
+  ```bash
+  ng add @angular-architects/native-federation --project shell --port 4200 --type dynamic-host
+  ```
+* **Cấu hình dynamic route nạp Micro-frontend**:
+  ```typescript
+  import { Routes } from '@angular/router';
+  import { loadRemoteModule } from '@angular-architects/native-federation';
+
+  export const routes: Routes = [
+    {
+      path: 'flights',
+      loadChildren: () =>
+        loadRemoteModule('flights-remote', './routes').then(m => m.FLIGHTS_ROUTES)
+    },
+    {
+      path: 'payments',
+      loadChildren: () =>
+        loadRemoteModule('payments-remote', './routes').then(m => m.PAYMENTS_ROUTES)
+    }
+  ];
+  ```
+
+---
+
+### 4.2 Monorepo & Kiểm Soát Ranh Giới Kiến Trúc (Nx & Sheriff)
+
+Trong dự án lớn, việc các lập trình viên vô tình import chéo mã nguồn giữa các domain nghiệp vụ (Spaghetti Architecture) là nguyên nhân hàng đầu gây sập đổ kiến trúc phần mềm.
+
+#### 🏆 Top 1 Công cụ Monorepo: **Nx for Angular (`@nx/angular`)**
+* **Điểm mạnh vô song**:
+  - **Computation Caching**: Lưu trữ cache kết quả build và test (cả cục bộ lẫn phân tán trên Cloud). Không bao giờ tốn thời gian biên dịch lại code chưa từng thay đổi!
+  - **Dependency Graph Visualizer**: Lệnh `nx graph` tự động vẽ sơ đồ trực quan tương tác giữa toàn bộ các module và thư viện trong hệ thống.
+  - **Affected Builds**: Lệnh `nx affected --target=build` chỉ build và chạy test trên đúng những module bị ảnh hưởng bởi Pull Request hiện tại.
+
+#### 🛡️ Vũ khí Bí mật cho Kiến trúc Modolith: **Sheriff (`@softarc-consulting/sheriff`)**
+* **Vấn đề giải quyết**: Bạn muốn kiểm soát ranh giới kiến trúc nghiêm ngặt nhưng không muốn cấu hình phức tạp của Monorepo?
+* **Cách hoạt động**: Sheriff gắn các nhãn `tags` vào các thư mục domain (ví dụ: `domain:ordering`, `domain:payment`, `type:feature`, `type:ui`). Nếu một lập trình viên trong `payment` gõ lệnh `import ... from 'ordering'`, Sheriff sẽ lập tức báo lỗi ngay trong IDE và chặn commit!
+* **Cấu hình mẫu (`sheriff.config.ts`)**:
+  ```typescript
+  import { SheriffConfig } from '@softarc-consulting/sheriff';
+
+  export const config: SheriffConfig = {
+    version: 1,
+    tagging: {
+      'src/app/domains/<domain>/<type>': ['domain:<domain>', 'type:<type>']
+    },
+    depRules: {
+      'root': ['*'],
+      'domain:*': ({ from, to }) => from[0] === to[0], // Cấm import giữa 2 domain khác nhau!
+      'type:feature': ['type:ui', 'type:data-access', 'type:model'],
+      'type:ui': ['type:model'],
+    }
+  };
+  ```
+
+---
+
+### 4.3 Hệ Sinh Thái "Phù Thủy" @ngneat (Elf, Sonner, Casl...)
+
+Được dẫn dắt bởi Netanel Basal (Kỹ sư hàng đầu tại Salesforce), `@ngneat` là kho báu các thư viện nguồn mở chất lượng cao nhất cho Angular:
+
+1. **[@ngneat/elf](https://ngneat.github.io/elf/) - Reactive State Tree Đa Tầng**:
+   - Được thiết kế dựa trên triết lý Module State, cực kỳ nhẹ (~1KB per store), phân tách rõ ràng giữa Core Store, Entities State, và UI State.
+   - Không cần decorator, không cần switch-case rườm rà.
+2. **[ngx-sonner](https://github.com/qckhnh/ngx-sonner) & [@ngneat/hot-toast](https://ngneat.github.io/hot-toast/)**:
+   - Thư viện thông báo Toast chuẩn mực thiết kế hiện đại nhất hiện nay (phong cách Emil Kowalski của shadcn/ui).
+   - Tự động xếp chồng thông báo (stacked cards), kéo vuốt tắt (swipe to dismiss), hỗ trợ Dark mode và Promise loading states.
+3. **[@ngneat/casl](https://github.com/ngneat/casl)**:
+   - Tích hợp chuẩn xác CASL (Isomorphic Authorization Library) vào Angular.
+   - Hỗ trợ phân quyền dựa trên thuộc tính (ABAC - Attribute-Based Access Control): không chỉ kiểm tra vai trò `role === 'ADMIN'`, mà có thể kiểm tra logic phức tạp như `user.can('update', article, { isOwner: true })`.
+4. **[@ngneat/overview](https://github.com/ngneat/overview)**:
+   - Tiện ích kết xuất linh hoạt (Dynamic Views, Templates, Standalone Components) tại thời gian chạy mà không cần phải viết hàng chục dòng `ComponentFactoryResolver` hay `ViewContainerRef`.
+
+---
+
+### 4.4 Các Linh Kiện Doanh Nghiệp Chuyên Dụng (Heavy-Duty Components)
+
+Những bài toán "khó nhằn" trong các phần mềm doanh nghiệp đặc thù:
+
+1. **[ngx-extended-pdf-viewer](https://pdfviewer.net/) (Trình hiển thị & Thao tác PDF đỉnh cao)**:
+   - Dựa trên nền tảng Mozilla PDF.js nhưng được bọc hoàn hảo cho Angular.
+   - Đầy đủ tính năng như Adobe Reader: Tìm kiếm từ khóa, vẽ ghi chú, điền biểu mẫu PDF tương tác (Form filling), ký số điện tử (Digital signature), xoay trang và in ấn chất lượng cao.
+2. **[ngx-mask](https://github.com/JsDaddy/ngx-mask) (Định dạng & Mặt nạ Nhập liệu)**:
+   - Định dạng chuẩn mực cho các ô nhập liệu nhạy cảm: Số tài khoản ngân hàng, Thẻ tín dụng, Số căn cước (CCCD), Số điện thoại quốc tế, Tiền tệ với dấu phân cách hàng nghìn tự động.
+3. **[@ng-select/ng-select](https://ng-select.github.io/ng-select/) (Dropdown Chọn dữ liệu khổng lồ)**:
+   - Khả năng ảo hóa danh sách (Virtual Scroll) cho phép người dùng cuộn mượt mà qua danh mục có **100,000+ tùy chọn** mà DOM chỉ render 15 phần tử hiển thị. Hỗ trợ multi-select, tag creation, và debounce tìm kiếm từ API.
+4. **[ngx-monaco-editor-v2](https://github.com/bithost-gmbh/ngx-monaco-editor-v2) (VS Code Engine trong Angular)**:
+   - Nhúng trực tiếp trình soạn thảo mã nguồn Monaco Editor của Microsoft vào ứng dụng. Hỗ trợ IntelliSense, tô màu cú pháp (Syntax Highlighting) cho hơn 50 ngôn ngữ lập trình, Diff editor và Format code tự động.
+5. **[ngx-permissions](https://github.com/AlexKhymenko/ngx-permissions) (Điều khiển quyền hiển thị cấp Directive)**:
+   - Ẩn/hiện các phần tử giao diện theo quyền hạn cực kỳ đơn giản:
+     ```html
+     <button *ngxPermissionsOnly="['ADMIN', 'FINANCE_MANAGER']">
+       Duyệt giải ngân ngân sách
+     </button>
+     ```
+
+---
+
+### 4.5 Tinh Hoa Tối Ưu Hiệu Năng & CDK (@rx-angular & Angular CDK)
+
+1. **[@rx-angular/template](https://www.rx-angular.io/docs/template)**:
+   - Công cụ tối ưu hiệu năng Change Detection đỉnh cao cho Angular.
+   - Cung cấp directive `*rxLet` và `*rxFor` thay thế cho `*ngIf` và `*ngFor` với các chiến lược: **Coalescing** (gom các lần cập nhật liên tiếp vào 1 tick duy nhất), **Concurrent Scheduling** (ưu tiên tác vụ quan trọng của người dùng trước khi render background).
+2. **[@angular/cdk/scrolling](https://material.angular.io/cdk/scrolling/overview) (Ảo hóa DOM - Virtual Scrolling)**:
+   - Biến các danh sách dài vô tận (Infinite Feeds, Bảng giá chứng khoán) thành các danh sách siêu nhẹ chỉ render đúng những gì nằm trong tầm mắt người dùng.
+3. **[@angular/cdk/drag-drop](https://material.angular.io/cdk/drag-drop/overview)**:
+   - Xây dựng các tính năng kéo thả phức tạp chuẩn cấp ngân hàng (Kanban boards như Jira/Trello, sắp xếp thứ tự bảng, di chuyển dữ liệu giữa các cột) với khả năng tùy biến placeholder, preview và animation mượt mà 60 FPS.
+
+---
+
+### 4.6 Ứng Dụng Đa Nền Tảng (Cross-Platform Mobile với Ionic & Capacitor)
+
+Một trong những sức mạnh "vũ bão" của Angular là khả năng tận dụng 100% mã nguồn web để đóng gói thành ứng dụng di động bản địa:
+
+* **[@ionic/angular](https://ionicframework.com/docs/angular/overview) + [@capacitor/core](https://capacitorjs.com/)**:
+  - Cung cấp hơn 100+ component chuẩn thiết kế iOS (Cupertino) và Android (Material).
+  - Tự động điều chỉnh hiệu ứng chuyển trang, thanh cuộn, modal theo đúng chuẩn hệ điều hành người dùng đang cầm trên tay.
+  - Cầu nối Capacitor cho phép gọi trực tiếp các API phần cứng của điện thoại qua TypeScript: **FaceID / Vân tay (Biometrics), Camera quét mã QR, Định vị GPS nền, Push Notifications thời gian thực**.
 
 ---
 
