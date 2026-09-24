@@ -1,0 +1,111 @@
+<div class="dispatch-page flex flex-col gap-6">
+  <!-- Page Header -->
+  <div class="page-header flex justify-between items-center">
+    <div>
+      <h1 class="page-title">Bảng Điều Phối Logistics & Thông Quan Hàng Hóa</h1>
+      <p class="page-subtitle">
+        Minh họa <strong>&#64;angular/cdk/drag-drop</strong> kết hợp <strong>Directive-based RBAC (*appPermission)</strong> và <strong>ngx-sonner</strong>
+      </p>
+    </div>
+    <div class="security-banner flex items-center gap-2">
+      <lucide-icon [img]="ShieldIcon" size="18" [color]="authStore.roleProfile().badgeColor"></lucide-icon>
+      <span>Quyền hiện tại: <strong [style.color]="authStore.roleProfile().badgeColor">{{ authStore.roleProfile().title }}</strong></span>
+    </div>
+  </div>
+
+  <!-- CDK Drag and Drop Kanban Board -->
+  <div class="kanban-board grid grid-cols-4 gap-4" cdkDropListGroup>
+    @for (col of columns; track col.id) {
+      <div class="kanban-column flex flex-col">
+        <!-- Column Header -->
+        <div class="column-header flex justify-between items-center" [ngClass]="col.badgeClass">
+          <div class="flex items-center gap-2">
+            <span class="column-title font-bold">{{ col.title }}</span>
+            <span class="count-pill">{{ getColumnItems(col.id).length }}</span>
+          </div>
+        </div>
+        <div class="column-desc text-secondary">{{ col.description }}</div>
+
+        <!-- Drop List Container -->
+        <div
+          cdkDropList
+          [id]="col.id"
+          [cdkDropListData]="getColumnItems(col.id)"
+          (cdkDropListDropped)="onDrop($event, col.id)"
+          class="column-drop-zone flex-1 flex flex-col gap-3"
+        >
+          @for (shipment of getColumnItems(col.id); track shipment.id) {
+            <div
+              class="shipment-card arsenal-card flex flex-col gap-2"
+              cdkDrag
+              [cdkDragData]="shipment"
+            >
+              <!-- Card Top -->
+              <div class="flex justify-between items-center">
+                <span class="awb-badge">{{ shipment.awbNumber }}</span>
+                <span class="priority-badge" [ngClass]="shipment.priority.toLowerCase()">
+                  {{ shipment.priority }}
+                </span>
+              </div>
+
+              <!-- Container & Goods -->
+              <div class="container-text font-bold text-primary">{{ shipment.containerCode }}</div>
+              <div class="goods-desc text-secondary">{{ shipment.itemsDescription }}</div>
+
+              <!-- Route Line -->
+              <div class="route-box flex items-center gap-2">
+                <span class="hub-tag">{{ shipment.originHub.split(' ')[0] }}</span>
+                <lucide-icon [img]="ArrowIcon" size="14" class="text-secondary"></lucide-icon>
+                <span class="hub-tag">{{ shipment.destinationHub.split(' ')[0] }}</span>
+              </div>
+
+              <!-- Stats & Carrier -->
+              <div class="card-footer flex justify-between items-center">
+                <div class="flex flex-col">
+                  <span class="meta-label">Trọng lượng</span>
+                  <span class="meta-val font-semibold">{{ shipment.weightKg.toLocaleString() }} kg</span>
+                </div>
+                <div class="flex flex-col text-right">
+                  <span class="meta-label">Hãng vận tải</span>
+                  <span class="meta-val font-semibold">{{ shipment.carrier }}</span>
+                </div>
+              </div>
+
+              <!-- RBAC Action Buttons (Only visible if User has Permission) -->
+              <div class="rbac-actions flex gap-2 pt-2 border-top">
+                <!-- Customs Approval (Only for CUSTOMS_OFFICER or DIRECTOR) -->
+                @if (shipment.status === 'CUSTOMS') {
+                  <button
+                    *appPermission="['CUSTOMS_OFFICER', 'DIRECTOR']"
+                    type="button"
+                    class="btn-action btn-customs flex-1 flex items-center justify-center gap-1"
+                    (click)="approveCustomsDirectly(shipment)"
+                  >
+                    <lucide-icon [img]="ShieldIcon" size="14"></lucide-icon>
+                    <span>Ký Duyệt Hải Quan</span>
+                  </button>
+                }
+
+                <!-- Cancel Shipment (Only for DIRECTOR) -->
+                <button
+                  *appPermission="['DIRECTOR']"
+                  type="button"
+                  class="btn-action btn-danger"
+                  (click)="cancelShipment(shipment)"
+                  title="Hủy vận đơn (Quyền Giám Đốc)"
+                >
+                  <lucide-icon [img]="TrashIcon" size="14"></lucide-icon>
+                </button>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-column flex flex-col items-center justify-center p-6 text-secondary">
+              <span class="empty-icon">📦</span>
+              <span>Kéo thả vận đơn vào đây</span>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

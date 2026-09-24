@@ -37,6 +37,7 @@ Tài liệu được xây dựng nhằm giúp các Tech Lead, Solution Architect
    - [4.6 Ứng Dụng Đa Nền Tảng (Cross-Platform Mobile với Ionic & Capacitor)](#46-ứng-dụng-đa-nền-tảng-cross-platform-mobile-với-ionic--capacitor)
 5. [Dự Án Mẫu Thực Chiến (Showcase Projects)](#-dự-án-mẫu-thực-chiến-showcase-projects)
    - [Project 01: Enterprise Admin Dashboard](#-project-01-enterprise-admin-dashboard-projects01-enterprise-admin)
+   - [Project 02: Global Supply Chain Command Center](#-project-02-global-supply-chain-command-center-projects02-supply-chain-arsenal)
 6. [Xu hướng chuyển dịch công nghệ trong Angular (2025 - 2026)](#-xu-hướng-chuyển-dịch-công-nghệ-trong-angular-2025---2026)
 7. [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
 
@@ -771,6 +772,31 @@ Một trong những sức mạnh "vũ bão" của Angular là khả năng tận 
   ```bash
   # 1. Di chuyển vào thư mục dự án
   cd projects/01-enterprise-admin
+
+  # 2. Cài đặt các gói phụ thuộc
+  npm install --legacy-peer-deps
+
+  # 3. Khởi chạy máy chủ phát triển
+  npm start
+  ```
+  Ứng dụng sẽ tự động chạy tại: `http://localhost:4200`
+
+---
+
+### 📌 [Project 02: Global Supply Chain Command Center](projects/02-supply-chain-arsenal)
+Ứng dụng giám sát và điều phối chuỗi cung ứng toàn cầu tích hợp toàn bộ các **"Vũ Khí Hạng Nặng" (Enterprise Arsenal)** của hệ sinh thái Angular:
+* **Mã nguồn**: [`projects/02-supply-chain-arsenal`](projects/02-supply-chain-arsenal)
+* **Bộ vũ khí hạng nặng tích hợp**:
+  - **`@angular/cdk/drag-drop`**: Bảng điều phối vận tải logistics dạng Kanban 4 cột (Tiếp nhận Cảng → Thủ tục Hải quan → Vận chuyển Quốc tế → Đã giao đích) với hiệu ứng kéo thả mượt mà 60 FPS, drag-preview và kiểm tra quyền hạn trước khi thả.
+  - **`@angular/cdk/scrolling` (Virtual Scroll)**: Sổ cái theo dõi **10,000+ kiện hàng** thời gian thực. Trình duyệt chỉ sinh 20 thẻ DOM thật trong tầm nhìn, cuộn cực mượt, bộ nhớ RAM ổn định.
+  - **`ngx-mask`**: Chuẩn hóa mặt nạ nhập liệu quốc tế: Mã AWB hàng không (`000-00000000`), Mã container quốc tế ISO 6346 (`SSSS-0000000`), Biển số xe container (`00S-000.00`), Số điện thoại quốc tế (`+00 000 000 0000`), Trọng lượng và Giá trị USD phân tách hàng nghìn tự động.
+  - **Directive-based RBAC (`*appPermission`)**: Phân quyền trực tiếp trên template kết hợp `AuthStore`. Cho phép chuyển đổi vai trò ngay trên Header giữa 4 vị trí: *Giám Đốc (DIRECTOR)*, *Điều Phối Viên (DISPATCHER)*, *Cán Bộ Hải Quan (CUSTOMS_OFFICER)*, *Thủ Kho (WAREHOUSE_STAFF)* để xem các nút đặc quyền (như Ký duyệt Hải quan, Hủy vận đơn) tự động xuất hiện hoặc biến mất.
+  - **`ngx-sonner`**: Hệ thống thông báo xếp chồng (Stacked Toasts) cao cấp chuẩn modern web phong cách shadcn.
+  - **`@ngrx/signals`**: Quản lý toàn bộ State qua NgRx SignalStore, tính toán tổng trọng tải, giá trị hàng hóa và số kiện khẩn cấp.
+* **Hướng dẫn cài đặt & khởi chạy**:
+  ```bash
+  # 1. Di chuyển vào thư mục dự án
+  cd projects/02-supply-chain-arsenal
 
   # 2. Cài đặt các gói phụ thuộc
   npm install --legacy-peer-deps

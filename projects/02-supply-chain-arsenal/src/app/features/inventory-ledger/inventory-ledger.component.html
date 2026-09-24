@@ -1,0 +1,105 @@
+<div class="ledger-page flex flex-col gap-6">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="page-title">Sổ Cái Kiện Hàng Toàn Cầu (Virtual Scroll 10,000+)</h1>
+      <p class="page-subtitle">
+        Minh họa <strong>&#64;angular/cdk/scrolling (Virtual Scroll)</strong> render mượt mà hơn <strong>10,000 kiện hàng</strong> mà chỉ sinh 20 thẻ DOM thật
+      </p>
+    </div>
+    <div class="flex gap-2">
+      <button (click)="exportAuditReport()" class="btn-export flex items-center gap-2">
+        <lucide-icon [img]="DownloadIcon" size="16"></lucide-icon>
+        <span>Xuất Báo Cáo Sổ Cái</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Performance Badge & Filter Bar -->
+  <div class="arsenal-card filter-card flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3 flex-1">
+      <!-- Search Input -->
+      <div class="search-box flex-1 flex items-center">
+        <lucide-icon [img]="SearchIcon" size="18" class="search-icon"></lucide-icon>
+        <input
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Tìm kiếm trong 10,000 kiện hàng (AWB, Container, Cảng, Hãng tàu)..."
+          class="custom-search"
+        />
+      </div>
+
+      <!-- Status Filter -->
+      <div class="select-box">
+        <select
+          [ngModel]="selectedStatus()"
+          (ngModelChange)="onStatusChange($event)"
+          class="custom-select"
+        >
+          <option value="ALL">Tất cả trạng thái</option>
+          <option value="INTAKE">Tiếp nhận cảng (INTAKE)</option>
+          <option value="CUSTOMS">Thủ tục hải quan (CUSTOMS)</option>
+          <option value="IN_TRANSIT">Đang vận chuyển (IN_TRANSIT)</option>
+          <option value="DELIVERED">Đã giao cảng đích (DELIVERED)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="perf-stats flex items-center gap-2">
+      <div class="zap-badge flex items-center gap-1">
+        <lucide-icon [img]="ZapIcon" size="14"></lucide-icon>
+        <span>60 FPS</span>
+      </div>
+      <span class="count-tag">
+        Hiển thị <strong>{{ store.filteredLedger().length.toLocaleString() }}</strong> / 10,000 kiện
+      </span>
+    </div>
+  </div>
+
+  <!-- Virtual Scroll Viewport Container -->
+  <div class="arsenal-card viewport-card flex flex-col">
+    <!-- Table Header (Sticky) -->
+    <div class="ledger-header-row grid-table">
+      <div class="col col-awb">MÃ VẬN ĐƠN (AWB)</div>
+      <div class="col col-container">CONTAINER</div>
+      <div class="col col-goods">HÀNG HÓA</div>
+      <div class="col col-route">LỘ TRÌNH VẬN CHUYỂN</div>
+      <div class="col col-carrier">HÃNG VẬN TẢI</div>
+      <div class="col col-weight">TRỌNG LƯỢNG</div>
+      <div class="col col-status">TRẠNG THÁI</div>
+    </div>
+
+    <!-- CDK Virtual Scroll Viewport -->
+    <cdk-virtual-scroll-viewport itemSize="56" minBufferPx="300" maxBufferPx="600" class="virtual-viewport">
+      <div
+        *cdkVirtualFor="let shipment of store.filteredLedger(); let i = index"
+        class="ledger-row grid-table"
+        (click)="showShipmentDetail(shipment)"
+      >
+        <div class="col col-awb">
+          <span class="awb-text font-bold font-mono">{{ shipment.awbNumber }}</span>
+          <span class="row-index">#{{ i + 1 }}</span>
+        </div>
+        <div class="col col-container">
+          <span class="container-badge">{{ shipment.containerCode }}</span>
+        </div>
+        <div class="col col-goods">
+          <span class="goods-title">{{ shipment.itemsDescription }}</span>
+          <span class="goods-val">${{ shipment.declaredValueUsd.toLocaleString() }}</span>
+        </div>
+        <div class="col col-route">
+          <span class="route-text">{{ shipment.originHub.split(' ')[0] }} ➔ {{ shipment.destinationHub.split(' ')[0] }}</span>
+        </div>
+        <div class="col col-carrier font-medium">{{ shipment.carrier }}</div>
+        <div class="col col-weight font-semibold">{{ shipment.weightKg.toLocaleString() }} kg</div>
+        <div class="col col-status">
+          <span class="status-pill" [ngClass]="shipment.status.toLowerCase()">
+            {{ shipment.status }}
+          </span>
+        </div>
+      </div>
+    </cdk-virtual-scroll-viewport>
+  </div>
+</div>

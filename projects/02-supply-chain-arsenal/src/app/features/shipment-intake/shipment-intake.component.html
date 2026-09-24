@@ -1,0 +1,211 @@
+<div class="intake-page flex flex-col gap-6">
+  <!-- Page Header -->
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="page-title">Khai Báo Vận Đơn & Container Nhập Cảng</h1>
+      <p class="page-subtitle">
+        Minh họa <strong>ngx-mask</strong> tự động định dạng và chuẩn hóa mặt nạ nhập liệu nhạy cảm theo tiêu chuẩn IATA & ISO 6346
+      </p>
+    </div>
+    <div class="mask-badge flex items-center gap-1">
+      <lucide-icon [img]="SparkleIcon" size="16" color="#8b5cf6"></lucide-icon>
+      <span>Active Masking Engine</span>
+    </div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="submitShipment()" class="intake-form flex flex-col gap-6">
+    <!-- Section 1: Standard Logistics Identifiers (Mặt nạ chuẩn hóa) -->
+    <div class="arsenal-card flex flex-col gap-4">
+      <div class="section-header">
+        <h2 class="section-title">1. Mã Định Danh Vận Tải Quốc Tế (Masked Identifiers)</h2>
+        <p class="section-subtitle">Tự động chèn dấu gạch nối và kiểm tra ký tự theo thời gian thực</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <!-- AWB Mask: 000-00000000 -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Mã Vận Đơn Hàng Không AWB *
+            <span class="mask-hint">mask="000-00000000"</span>
+          </label>
+          <input
+            type="text"
+            formControlName="awbNumber"
+            mask="000-00000000"
+            placeholder="VD: 784-90412845"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Container Mask: SSSS-0000000 -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Mã Container Quốc Tế (ISO 6346) *
+            <span class="mask-hint">mask="SSSS-0000000"</span>
+          </label>
+          <input
+            type="text"
+            formControlName="containerCode"
+            mask="SSSS-0000000"
+            placeholder="VD: MSKU-7821940"
+            class="form-control uppercase"
+          />
+        </div>
+
+        <!-- Vehicle Plate Mask: 00S-000.00 -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Biển Số Xe Container Tiếp Nhận *
+            <span class="mask-hint">mask="00S-000.00"</span>
+          </label>
+          <input
+            type="text"
+            formControlName="driverPlate"
+            mask="00S-000.00"
+            placeholder="VD: 51C-982.14"
+            class="form-control uppercase"
+          />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <!-- International Phone Mask: +00 000 000 0000 -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Số Điện Thoại Tài Xế / Điều Phối Quốc Tế *
+            <span class="mask-hint">mask="+00 000 000 0000"</span>
+          </label>
+          <input
+            type="text"
+            formControlName="driverPhone"
+            mask="+00 000 000 0000"
+            placeholder="+84 908 123 4567"
+            class="form-control"
+          />
+        </div>
+
+        <!-- Tax / EORI Mask: 0000000000-000 -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Mã Số Thuế Hải Quan Doanh Nghiệp (EORI / Tax ID) *
+            <span class="mask-hint">mask="0000000000-000"</span>
+          </label>
+          <input
+            type="text"
+            formControlName="eoriTaxNumber"
+            mask="0000000000-000"
+            placeholder="0312849102-001"
+            class="form-control"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Route & Physical Cargo Info -->
+    <div class="arsenal-card flex flex-col gap-4">
+      <div class="section-header">
+        <h2 class="section-title">2. Tuyến Đường & Khối Lượng Hàng Hóa</h2>
+        <p class="section-subtitle">Định dạng số phân tách hàng nghìn tự động</p>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">Cảng Đi (Origin Hub) *</label>
+          <select formControlName="originHub" class="form-control">
+            @for (h of hubs; track h.code) {
+              <option [value]="h.name">{{ h.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">Cảng Đích (Destination Hub) *</label>
+          <select formControlName="destinationHub" class="form-control">
+            @for (h of hubs; track h.code) {
+              <option [value]="h.name">{{ h.name }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">Hãng Vận Tải Quốc Tế *</label>
+          <select formControlName="carrier" class="form-control">
+            @for (c of carriers; track c) {
+              <option [value]="c">{{ c }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-3 gap-4">
+        <!-- Separator mask for Weight -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Trọng Lượng Thực Tế (Kg) *
+            <span class="mask-hint">mask="separator.0"</span>
+          </label>
+          <div class="input-suffix-wrapper">
+            <input
+              type="text"
+              formControlName="weightKg"
+              mask="separator.0"
+              thousandSeparator=","
+              placeholder="VD: 24,500"
+              class="form-control"
+            />
+            <span class="suffix">kg</span>
+          </div>
+        </div>
+
+        <!-- Separator mask for Declared Value -->
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">
+            Giá Trị Khai Báo Hải Quan ($ USD) *
+            <span class="mask-hint">mask="separator.0"</span>
+          </label>
+          <div class="input-suffix-wrapper">
+            <input
+              type="text"
+              formControlName="declaredValueUsd"
+              mask="separator.0"
+              thousandSeparator=","
+              placeholder="VD: 185,000"
+              class="form-control"
+            />
+            <span class="suffix">USD</span>
+          </div>
+        </div>
+
+        <div class="form-group flex flex-col gap-1">
+          <label class="form-label">Mức Độ Ưu Tiên Kiểm Hóa *</label>
+          <select formControlName="priority" class="form-control">
+            <option value="NORMAL">Hàng hóa tiêu chuẩn (NORMAL)</option>
+            <option value="URGENT">Khẩn cấp xuất hàng (URGENT)</option>
+            <option value="HAZARDOUS">Hàng nguy hiểm / Pin (HAZARDOUS)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group flex flex-col gap-1">
+        <label class="form-label">Mô Tả Chi Tiết Kiện Hàng & Chủng Loại Hàng *</label>
+        <textarea
+          formControlName="itemsDescription"
+          rows="2"
+          class="form-control"
+          placeholder="VD: Bo mạch vi xử lý công nghiệp, màn hình cảm ứng, tiêu chuẩn chống sốc"
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Submit Section -->
+    <div class="form-actions flex justify-between items-center">
+      <div class="form-tip text-secondary text-sm">
+        ⚡ Dữ liệu sau khi nộp sẽ được lưu vào <strong>NgRx SignalStore</strong> và hiển thị tại Bảng Điều Phối.
+      </div>
+      <button type="submit" class="btn-submit flex items-center gap-2">
+        <lucide-icon [img]="SendIcon" size="18"></lucide-icon>
+        <span>Hoàn Tất Khai Báo & Đưa Vào Bãi Cảng</span>
+      </button>
+    </div>
+  </form>
+</div>
