@@ -1,0 +1,197 @@
+<div class="products-page flex flex-col gap-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="page-title">Quản Lý Sản Phẩm & Kho Hàng</h1>
+      <p class="page-subtitle">Quản lý danh mục, biến động tồn kho và giá cả thời gian thực với PrimeNG Table & NgRx Signals</p>
+    </div>
+    <div>
+      <p-button
+        label="Thêm Sản Phẩm Mới"
+        icon="pi pi-plus"
+        severity="primary"
+        (onClick)="openNew()"
+      ></p-button>
+    </div>
+  </div>
+
+  <!-- Filter Toolbar -->
+  <div class="admin-card filter-card flex items-center justify-between gap-4">
+    <div class="flex items-center gap-3 flex-1">
+      <!-- Search Box -->
+      <div class="search-input-wrapper flex-1">
+        <lucide-icon [img]="SearchIcon" size="18" class="search-icon"></lucide-icon>
+        <input
+          pInputText
+          type="text"
+          [ngModel]="searchTerm()"
+          (ngModelChange)="onSearchChange($event)"
+          placeholder="Tìm theo mã, tên hoặc mô tả sản phẩm..."
+          class="custom-search-input"
+        />
+      </div>
+
+      <!-- Category Filter -->
+      <div class="category-select-wrapper">
+        <p-select
+          [options]="categories"
+          [ngModel]="selectedCategory()"
+          (ngModelChange)="onCategoryChange($event)"
+          optionLabel="label"
+          placeholder="Chọn danh mục"
+          class="w-full"
+        ></p-select>
+      </div>
+    </div>
+
+    <!-- Quick stats summary -->
+    <div class="filter-stats flex items-center gap-3">
+      <span class="stat-badge">
+        Hiển thị: <strong>{{ store.filteredProducts().length }}</strong> / {{ store.totalProductsCount() }}
+      </span>
+    </div>
+  </div>
+
+  <!-- PrimeNG Data Table -->
+  <div class="admin-card table-card">
+    <p-table
+      [value]="store.filteredProducts()"
+      [paginator]="true"
+      [rows]="6"
+      [rowsPerPageOptions]="[6, 12, 24]"
+      [tableStyle]="{ 'min-width': '65rem' }"
+      styleClass="p-datatable-striped"
+    >
+      <ng-template #header>
+        <tr>
+          <th pSortableColumn="code" style="width: 12%">Mã SP <p-sort-icon field="code"></p-sort-icon></th>
+          <th pSortableColumn="name" style="width: 28%">Tên Sản Phẩm <p-sort-icon field="name"></p-sort-icon></th>
+          <th pSortableColumn="category" style="width: 15%">Danh Mục <p-sort-icon field="category"></p-sort-icon></th>
+          <th pSortableColumn="price" style="width: 12%">Đơn Giá <p-sort-icon field="price"></p-sort-icon></th>
+          <th pSortableColumn="quantity" style="width: 10%">Tồn Kho <p-sort-icon field="quantity"></p-sort-icon></th>
+          <th pSortableColumn="inventoryStatus" style="width: 12%">Trạng Thái <p-sort-icon field="inventoryStatus"></p-sort-icon></th>
+          <th style="width: 11%; text-align: center">Thao Tác</th>
+        </tr>
+      </ng-template>
+
+      <ng-template #body let-product>
+        <tr>
+          <td>
+            <span class="code-badge">{{ product.code }}</span>
+          </td>
+          <td>
+            <div class="product-info flex flex-col">
+              <span class="product-name font-semibold">{{ product.name }}</span>
+              <span class="product-desc text-secondary">{{ product.description }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="category-pill">{{ product.category }}</span>
+          </td>
+          <td>
+            <span class="price-text">{{ product.price | currency:'USD':'symbol':'1.0-0' }}</span>
+          </td>
+          <td>
+            <span class="quantity-text font-semibold" [class.text-danger]="product.quantity === 0">
+              {{ product.quantity }} chiếc
+            </span>
+          </td>
+          <td>
+            <p-tag
+              [value]="getStatusLabel(product.inventoryStatus)"
+              [severity]="getSeverity(product.inventoryStatus)"
+            ></p-tag>
+          </td>
+          <td style="text-align: center">
+            <div class="flex items-center justify-center gap-1">
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="info"
+                (onClick)="editProduct(product)"
+                pTooltip="Chỉnh sửa"
+              ></p-button>
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                (onClick)="confirmDelete(product)"
+                pTooltip="Xóa"
+              ></p-button>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template #emptymessage>
+        <tr>
+          <td colspan="7" class="text-center p-6 text-secondary">
+            <div class="flex flex-col items-center gap-2 py-6">
+              <lucide-icon [img]="AlertIcon" size="32" color="#94a3b8"></lucide-icon>
+              <span>Không tìm thấy sản phẩm nào phù hợp với điều kiện tìm kiếm.</span>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
+  <!-- PrimeNG Dialog Modal for Add/Edit -->
+  <p-dialog
+    [(visible)]="productDialog"
+    [header]="isEditMode() ? 'Cập Nhật Sản Phẩm' : 'Thêm Sản Phẩm Mới'"
+    [modal]="true"
+    [style]="{ width: '520px' }"
+    styleClass="p-fluid"
+  >
+    <div class="dialog-form flex flex-col gap-4 py-2">
+      <div class="field flex flex-col gap-1">
+        <label for="code" class="font-semibold">Mã Sản Phẩm *</label>
+        <input pInputText id="code" [(ngModel)]="currentProduct().code" placeholder="VD: PRD-1024" />
+      </div>
+
+      <div class="field flex flex-col gap-1">
+        <label for="name" class="font-semibold">Tên Sản Phẩm *</label>
+        <input pInputText id="name" [(ngModel)]="currentProduct().name" placeholder="VD: Màn hình LG UltraWide 34 inch" />
+      </div>
+
+      <div class="field flex flex-col gap-1">
+        <label for="description" class="font-semibold">Mô Tả Sản Phẩm</label>
+        <input pInputText id="description" [(ngModel)]="currentProduct().description" placeholder="Thông số kỹ thuật hoặc điểm nổi bật" />
+      </div>
+
+      <div class="field flex flex-col gap-1">
+        <label for="category" class="font-semibold">Danh Mục</label>
+        <select
+          id="category"
+          [(ngModel)]="currentProduct().category"
+          class="custom-form-select"
+        >
+          @for (c of categories.slice(1); track c.value) {
+            <option [value]="c.value">{{ c.label }}</option>
+          }
+        </select>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div class="field flex flex-col gap-1">
+          <label for="price" class="font-semibold">Đơn Giá ($) *</label>
+          <input pInputText id="price" type="number" [(ngModel)]="currentProduct().price" min="0" />
+        </div>
+        <div class="field flex flex-col gap-1">
+          <label for="quantity" class="font-semibold">Số Lượng Trong Kho *</label>
+          <input pInputText id="quantity" type="number" [(ngModel)]="currentProduct().quantity" min="0" />
+        </div>
+      </div>
+    </div>
+
+    <ng-template #footer>
+      <div class="flex justify-end gap-2">
+        <p-button label="Hủy" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="productDialog.set(false)"></p-button>
+        <p-button label="Lưu Dữ Liệu" icon="pi pi-check" severity="primary" (onClick)="saveProduct()"></p-button>
+      </div>
+    </ng-template>
+  </p-dialog>
+</div>

@@ -28,8 +28,10 @@ Tài liệu được xây dựng nhằm giúp các Tech Lead, Solution Architect
    - [9. Testing & Quality Assurance](#9-testing--quality-assurance)
    - [10. Fullstack & Meta-frameworks](#10-fullstack--meta-frameworks)
    - [11. Authentication & Security (OAuth2 / OIDC)](#11-authentication--security-oauth2--oidc)
-4. [Xu hướng chuyển dịch công nghệ trong Angular (2025 - 2026)](#-xu-hướng-chuyển-dịch-công-nghệ-trong-angular-2025---2026)
-5. [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
+4. [Dự Án Mẫu Thực Chiến (Showcase Projects)](#-dự-án-mẫu-thực-chiến-showcase-projects)
+   - [Project 01: Enterprise Admin Dashboard](#-project-01-enterprise-admin-dashboard-projects01-enterprise-admin)
+5. [Xu hướng chuyển dịch công nghệ trong Angular (2025 - 2026)](#-xu-hướng-chuyển-dịch-công-nghệ-trong-angular-2025---2026)
+6. [Đóng góp & Giấy phép](#-đóng-góp--giấy-phép)
 
 ---
 
@@ -593,6 +595,38 @@ Bảo mật ứng dụng Single Page Application đòi hỏi tuân thủ nghiêm
     timeoutFactor: 0.75,
   };
   ```
+
+---
+
+## 💻 Dự Án Mẫu Thực Chiến (Showcase Projects)
+
+Để đưa các thư viện mã nguồn mở vào ứng dụng thực tế, repository này cung cấp các dự án mẫu hoàn chỉnh (Production-ready template) được tối ưu hóa theo từng bài toán cụ thể:
+
+### 📌 [Project 01: Enterprise Admin Dashboard](projects/01-enterprise-admin)
+Ứng dụng bảng điều khiển quản trị doanh nghiệp minh họa bộ công nghệ (Tech Stack) thực dụng và tối ưu nhất hiện nay:
+* **Mã nguồn**: [`projects/01-enterprise-admin`](projects/01-enterprise-admin)
+* **Bộ công nghệ tuyển chọn**:
+  - **Framework**: Angular 19+ (100% Standalone Components, Signals-first, `@if/@for`, `provideAnimationsAsync`).
+  - **UI Component Library**: **PrimeNG v19** kết hợp `@primeuix/themes` (Preset Aura hiện đại, hỗ trợ Dark/Light mode).
+  - **State Management**: **NgRx SignalStore** (`@ngrx/signals`) – Quản lý state tập trung, zero-boilerplate, phản ứng trực tiếp qua Signals.
+  - **Charts & Data Viz**: **Apache ECharts** + **ngx-echarts** – Biểu đồ doanh thu 12 tháng mượt mà với hiệu ứng gradient.
+  - **Icons**: **lucide-angular** – Hệ thống icon vector nét thanh, tree-shakeable tối ưu.
+* **Tính năng thực tế**:
+  1. **Bảng điều khiển (Dashboard)**: 4 thẻ KPI chỉ số tài chính/tồn kho tính toán tự động qua Signals, Biểu đồ phân tích tài chính ECharts, Nhật ký hoạt động gần đây.
+  2. **Quản lý Sản phẩm & Kho hàng (Products Management)**: Bảng dữ liệu **PrimeNG Table** (Sắp xếp đa cột, Tìm kiếm toàn văn thời gian thực qua SignalStore, Lọc theo danh mục, Phân trang, Phân loại trạng thái hàng hóa).
+  3. **CRUD Modal & Feedback**: Thêm mới và Chỉnh sửa sản phẩm qua PrimeNG Dialog, xác nhận xóa qua Confirmation Dialog và hiển thị thông báo Toast.
+* **Hướng dẫn cài đặt & khởi chạy**:
+  ```bash
+  # 1. Di chuyển vào thư mục dự án
+  cd projects/01-enterprise-admin
+
+  # 2. Cài đặt các gói phụ thuộc
+  npm install --legacy-peer-deps
+
+  # 3. Khởi chạy máy chủ phát triển
+  npm start
+  ```
+  Ứng dụng sẽ tự động chạy tại: `http://localhost:4200`
 
 ---
 

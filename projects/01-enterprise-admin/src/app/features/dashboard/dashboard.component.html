@@ -1,0 +1,127 @@
+<div class="dashboard-page flex flex-col gap-6">
+  <!-- Page Header -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="page-title">Bảng Điều Khiển Quản Trị</h1>
+      <p class="page-subtitle">Hệ sinh thái Angular 19: Signals + PrimeNG Aura + NgRx SignalStore + ECharts</p>
+    </div>
+    <div class="flex gap-2">
+      <a routerLink="/products" class="btn-primary flex items-center gap-2">
+        <lucide-icon [img]="PackageIcon" size="18"></lucide-icon>
+        <span>Quản lý Kho Hàng</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- Metric Cards (Signals Driven) -->
+  <div class="grid grid-cols-4 gap-4">
+    <!-- Card 1: Inventory Value -->
+    <div class="admin-card metric-card">
+      <div class="flex justify-between items-center">
+        <span class="metric-label">Tổng Giá Trị Tồn Kho</span>
+        <div class="metric-icon-box bg-blue">
+          <lucide-icon [img]="DollarIcon" size="20" color="#3b82f6"></lucide-icon>
+        </div>
+      </div>
+      <div class="metric-value">{{ store.totalInventoryValue() | currency:'USD':'symbol':'1.0-0' }}</div>
+      <div class="metric-trend positive flex items-center gap-1">
+        <lucide-icon [img]="ArrowUpRightIcon" size="16"></lucide-icon>
+        <span>+14.8% so với tháng trước</span>
+      </div>
+    </div>
+
+    <!-- Card 2: Total Products -->
+    <div class="admin-card metric-card">
+      <div class="flex justify-between items-center">
+        <span class="metric-label">Tổng Số Sản Phẩm</span>
+        <div class="metric-icon-box bg-purple">
+          <lucide-icon [img]="PackageIcon" size="20" color="#8b5cf6"></lucide-icon>
+        </div>
+      </div>
+      <div class="metric-value">{{ store.totalProductsCount() }}</div>
+      <div class="metric-trend positive flex items-center gap-1">
+        <lucide-icon [img]="CheckIcon" size="16"></lucide-icon>
+        <span>{{ store.inStockCount() }} mặt hàng sẵn sàng</span>
+      </div>
+    </div>
+
+    <!-- Card 3: Low Stock Warning -->
+    <div class="admin-card metric-card">
+      <div class="flex justify-between items-center">
+        <span class="metric-label">Cảnh Báo Tồn Thấp (<= 10)</span>
+        <div class="metric-icon-box bg-amber">
+          <lucide-icon [img]="AlertIcon" size="20" color="#f59e0b"></lucide-icon>
+        </div>
+      </div>
+      <div class="metric-value text-amber">{{ store.lowStockCount() }}</div>
+      <div class="metric-trend warning flex items-center gap-1">
+        <span>Cần bổ sung nguồn cung cấp sớm</span>
+      </div>
+    </div>
+
+    <!-- Card 4: Out of Stock -->
+    <div class="admin-card metric-card">
+      <div class="flex justify-between items-center">
+        <span class="metric-label">Sản Phẩm Đã Hết Hàng</span>
+        <div class="metric-icon-box bg-rose">
+          <lucide-icon [img]="AlertIcon" size="20" color="#ef4444"></lucide-icon>
+        </div>
+      </div>
+      <div class="metric-value text-rose">{{ store.outOfStockCount() }}</div>
+      <div class="metric-trend danger flex items-center gap-1">
+        <span>Tạm dừng phân phối trực tuyến</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts & Activities Grid -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Chart Section -->
+    <div class="admin-card flex flex-col gap-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="section-title">Phân Tích Doanh Thu & Lợi Nhuận (2025 - 2026)</h2>
+          <p class="section-subtitle">Dữ liệu tài chính hợp nhất qua Apache ECharts</p>
+        </div>
+        <div class="live-badge flex items-center gap-1">
+          <span class="dot"></span>
+          <span>ECharts Canvas</span>
+        </div>
+      </div>
+      <div echarts [options]="chartOption" class="chart-box" style="height: 340px;"></div>
+    </div>
+
+    <!-- Recent Activities Section -->
+    <div class="admin-card flex flex-col gap-4">
+      <div class="flex justify-between items-center">
+        <div>
+          <h2 class="section-title">Nhật Ký Hoạt Động & Đơn Hàng Mới</h2>
+          <p class="section-subtitle">Ghi nhận các luồng nghiệp vụ thời gian thực</p>
+        </div>
+        <a routerLink="/products" class="view-all-link flex items-center gap-1">
+          <span>Xem tất cả</span>
+          <lucide-icon [img]="ArrowRightIcon" size="14"></lucide-icon>
+        </a>
+      </div>
+
+      <div class="activity-list flex flex-col gap-3">
+        @for (act of activities; track act.id) {
+          <div class="activity-item flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <img [src]="act.avatar" [alt]="act.user" class="act-avatar" />
+              <div class="flex flex-col">
+                <div class="act-text">
+                  <strong>{{ act.user }}</strong>
+                  <span class="act-action"> {{ act.action }} </span>
+                  <span class="act-target font-medium">{{ act.target }}</span>
+                </div>
+                <span class="act-time">{{ act.time }}</span>
+              </div>
+            </div>
+            <span class="status-pill">Đã ghi sổ</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>
